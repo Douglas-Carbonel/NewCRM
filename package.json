@@ -1,0 +1,22 @@
+{
+  "name": "api-node-b1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node Server.js",
+    "dev": "nodemon Server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "testar-sap": "node scripts/testar-conexao-sap.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "express": "^5.2.1",
+    "nodemon": "^3.1.14",
+    "sapb1-connect": "^1.0.0"
+  }
+}
