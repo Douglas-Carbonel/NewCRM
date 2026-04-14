@@ -19,8 +19,9 @@ export default function LoginPage() {
     try {
       await authService.login({ identifier, password });
       router.push('/clientes');
-    } catch {
-      setError('Credenciais inválidas. Verifique seu e-mail e senha.');
+    } catch (err) {
+      const e = err as { response?: { data?: { erro?: string } } };
+      setError(e.response?.data?.erro ?? 'Credenciais inválidas. Verifique seu usuário e senha do SAP.');
     } finally {
       setLoading(false);
     }
@@ -37,7 +38,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-white">CRM Platform</h1>
-          <p className="text-slate-400 mt-1">Integrado ao SAP Business One</p>
+          <p className="text-slate-400 mt-1">Use suas credenciais do SAP Business One</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-2xl p-8">

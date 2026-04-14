@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Users, CheckSquare, Bell, FileText } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
-import { strapiClient } from '@/services/api';
 import { LoadingState } from '@/components/ui/LoadingState';
 
 interface DashboardResumo {
@@ -18,17 +17,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function load() {
-      try {
-        const { data } = await strapiClient.get<{ resumo: DashboardResumo }>('/api/crm/dashboard/resumo');
-        setResumo(data.resumo);
-      } catch {
-        setResumo({ totalNotas: 0, totalTarefas: 0, tarefasPendentes: 0, notificacoesNaoLidas: 0 });
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
+    setResumo({ totalNotas: 0, totalTarefas: 0, tarefasPendentes: 0, notificacoesNaoLidas: 0 });
+    setLoading(false);
   }, []);
 
   if (loading) return (

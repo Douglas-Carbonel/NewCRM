@@ -6,6 +6,7 @@ import { SapQueryOptions } from '../types/sap.types';
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
 let cookieSession: string | null = null;
+let storedCredentials: { username: string; password: string } | null = null;
 
 class SapServiceError extends Error {
   public readonly code?: string;
@@ -21,14 +22,14 @@ class SapServiceError extends Error {
   }
 }
 
-async function loginSAP(): Promise<string> {
+async function performLogin(username: string, password: string): Promise<string> {
   try {
     const response = await axios.post(
       `${config.sap.url}/Login`,
       {
         CompanyDB: config.sap.company,
-        UserName: config.sap.user,
-        Password: config.sap.password,
+        UserName: username,
+        Password: password,
       },
       {
         httpsAgent,
@@ -38,7 +39,6 @@ async function loginSAP(): Promise<string> {
 
     const setCookie = response.headers['set-cookie'];
     const cookies = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
-    // Extract only "name=value" from each Set-Cookie header (strip HttpOnly, Secure, Path, etc.)
     cookieSession = cookies
       .map((c) => c.split(';')[0].trim())
       .filter(Boolean)
@@ -66,6 +66,26 @@ async function loginSAP(): Promise<string> {
   }
 }
 
+async function loginWithCredentials(username: string, password: string): Promise<string> {
+  storedCredentials = { username, password };
+  return performLogin(username, password);
+}
+
+async function loginSAP(): Promise<string> {
+  const username = storedCredentials?.username ?? config.sap.user;
+  const password = storedCredentials?.password ?? config.sap.password;
+
+  if (!username || !password) {
+    throw new SapServiceError(
+      'Credenciais SAP não configuradas. Faça login na plataforma.',
+      'NO_CREDENTIALS',
+      401
+    );
+  }
+
+  return performLogin(username, password);
+}
+
 function getCookie(): string | null {
   return cookieSession;
 }
@@ -74,13 +94,15 @@ function clearSession(): void {
   cookieSession = null;
 }
 
+function clearAll(): void {
+  cookieSession = null;
+  storedCredentials = null;
+}
+
 async function getWithSession<T>(url: string, options: AxiosRequestConfig = {}): Promise<T> {
   if (!cookieSession) {
     await loginSAP();
   }
-
-  console.log(`[SAP] GET ${url}`);
-  console.log(`[SAP] Cookie: ${cookieSession}`);
 
   try {
     const response = await axios.get<T>(url, {
@@ -95,6 +117,17 @@ async function getWithSession<T>(url: string, options: AxiosRequestConfig = {}):
     return response.data;
   } catch (err: unknown) {
     const e = err as { response?: { status?: number; data?: unknown } };
+    if (e.response?.status === 401) {
+      cookieSession = null;
+      await loginSAP();
+      const retry = await axios.get<T>(url, {
+        ...options,
+        headers: { ...options.headers, Cookie: cookieSession! },
+        httpsAgent,
+        timeout: options.timeout ?? config.sap.timeoutMs,
+      });
+      return retry.data;
+    }
     console.error(`[SAP] Error ${e.response?.status}:`, JSON.stringify(e.response?.data));
     throw err;
   }
@@ -115,8 +148,10 @@ function buildODataUrl(endpoint: string, opts: SapQueryOptions = {}): string {
 export const sapService = {
   url: config.sap.url,
   loginSAP,
+  loginWithCredentials,
   getCookie,
   clearSession,
+  clearAll,
   getWithSession,
   buildODataUrl,
 };

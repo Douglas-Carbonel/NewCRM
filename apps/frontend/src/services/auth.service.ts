@@ -1,4 +1,4 @@
-import { strapiClient, setAuthToken, clearAuthToken } from './api';
+import { sapClient } from './api';
 
 export interface LoginPayload {
   identifier: string;
@@ -6,35 +6,38 @@ export interface LoginPayload {
 }
 
 export interface AuthUser {
-  id: number;
   username: string;
-  email: string;
-  provider: string;
-  confirmed: boolean;
-  blocked: boolean;
-  createdAt: string;
 }
 
-export interface AuthResponse {
-  jwt: string;
-  user: AuthUser;
-}
+const SAP_USER_KEY = 'sap_user';
 
 export const authService = {
-  async login(payload: LoginPayload): Promise<AuthResponse> {
-    const { data } = await strapiClient.post<AuthResponse>('/api/auth/local', payload);
-    setAuthToken(data.jwt);
-    return data;
+  async login(payload: LoginPayload): Promise<AuthUser> {
+    const { data } = await sapClient.post<{ ok: boolean; user: string }>('/auth/login', {
+      username: payload.identifier,
+      password: payload.password,
+    });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(SAP_USER_KEY, data.user);
+    }
+    return { username: data.user };
   },
 
-  async getMe(): Promise<AuthUser> {
-    const { data } = await strapiClient.get<AuthUser>('/api/users/me');
-    return data;
+  getUser(): AuthUser | null {
+    if (typeof window === 'undefined') return null;
+    const username = localStorage.getItem(SAP_USER_KEY);
+    return username ? { username } : null;
+  },
+
+  isLoggedIn(): boolean {
+    if (typeof window === 'undefined') return false;
+    return !!localStorage.getItem(SAP_USER_KEY);
   },
 
   logout(): void {
-    clearAuthToken();
+    sapClient.post('/auth/logout').catch(() => {});
     if (typeof window !== 'undefined') {
+      localStorage.removeItem(SAP_USER_KEY);
       window.location.href = '/login';
     }
   },
