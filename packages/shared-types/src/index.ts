@@ -4,14 +4,15 @@ export interface SapBusinessPartner {
   CardType?: string;
   Phone1?: string;
   Phone2?: string;
+  Cellular?: string;
   EmailAddress?: string;
   ContactPerson?: string;
-  Balance?: number;
+  CurrentAccountBalance?: number;
+  OpenOrdersBalance?: number;
   CreditLimit?: number;
   City?: string;
-  CountryCode?: string;
+  Country?: string;
   Currency?: string;
-  Website?: string;
   FederalTaxID?: string;
 }
 

@@ -42,7 +42,7 @@ export async function listarClientes(req: Request, res: Response): Promise<void>
     const { top = '50', skip = '0', select } = req.query as Record<string, string>;
 
     const url = sapService.buildODataUrl('BusinessPartners', {
-      select: select ?? 'CardCode,CardName,CardType,Phone1,EmailAddress,Balance',
+      select: select ?? 'CardCode,CardName,CardType,Phone1,Phone2,Cellular,EmailAddress,ContactPerson,City,Country,Currency,FederalTaxID,CurrentAccountBalance,OpenOrdersBalance',
       filter: "CardType eq 'C'",
       top: Number(top),
       skip: Number(skip),
@@ -83,7 +83,7 @@ export async function buscarClientePorNome(req: Request, res: Response): Promise
 
     const termo = nome.trim();
     const url = sapService.buildODataUrl('BusinessPartners', {
-      select: 'CardCode,CardName,CardType,Phone1,EmailAddress,Balance',
+      select: 'CardCode,CardName,CardType,Phone1,EmailAddress,ContactPerson,City',
       filter: `CardType eq 'C' and contains(CardName,'${termo}')`,
       top: 50,
     });

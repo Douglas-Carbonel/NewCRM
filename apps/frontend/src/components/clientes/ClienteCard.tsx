@@ -14,8 +14,8 @@ export function ClienteCard({ cliente }: ClienteCardProps) {
     .join('')
     .toUpperCase();
 
-  const balance = cliente.Balance
-    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cliente.Balance)
+  const balance = cliente.CurrentAccountBalance != null
+    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cliente.CurrentAccountBalance)
     : null;
 
   return (
@@ -53,7 +53,7 @@ export function ClienteCard({ cliente }: ClienteCardProps) {
             <MapPin size={14} className="text-gray-400 flex-shrink-0" />
             <span className="truncate">
               {cliente.City}
-              {cliente.CountryCode ? `, ${cliente.CountryCode}` : ''}
+              {cliente.Country ? `, ${cliente.Country}` : ''}
             </span>
           </div>
         )}

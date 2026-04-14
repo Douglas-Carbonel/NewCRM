@@ -37,9 +37,12 @@ async function loginSAP(): Promise<string> {
     );
 
     const setCookie = response.headers['set-cookie'];
-    cookieSession = Array.isArray(setCookie)
-      ? setCookie.join(';')
-      : setCookie ?? '';
+    const cookies = Array.isArray(setCookie) ? setCookie : setCookie ? [setCookie] : [];
+    // Extract only "name=value" from each Set-Cookie header (strip HttpOnly, Secure, Path, etc.)
+    cookieSession = cookies
+      .map((c) => c.split(';')[0].trim())
+      .filter(Boolean)
+      .join('; ');
 
     return cookieSession;
   } catch (err: unknown) {
@@ -76,24 +79,32 @@ async function getWithSession<T>(url: string, options: AxiosRequestConfig = {}):
     await loginSAP();
   }
 
-  const response = await axios.get<T>(url, {
-    ...options,
-    headers: {
-      ...options.headers,
-      Cookie: cookieSession!,
-    },
-    httpsAgent,
-    timeout: options.timeout ?? config.sap.timeoutMs,
-  });
+  console.log(`[SAP] GET ${url}`);
+  console.log(`[SAP] Cookie: ${cookieSession}`);
 
-  return response.data;
+  try {
+    const response = await axios.get<T>(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        Cookie: cookieSession!,
+      },
+      httpsAgent,
+      timeout: options.timeout ?? config.sap.timeoutMs,
+    });
+    return response.data;
+  } catch (err: unknown) {
+    const e = err as { response?: { status?: number; data?: unknown } };
+    console.error(`[SAP] Error ${e.response?.status}:`, JSON.stringify(e.response?.data));
+    throw err;
+  }
 }
 
 function buildODataUrl(endpoint: string, opts: SapQueryOptions = {}): string {
   const params: string[] = [];
-  if (opts.select) params.push(`$select=${encodeURIComponent(opts.select)}`);
+  if (opts.select) params.push(`$select=${opts.select}`);
   if (opts.filter) params.push(`$filter=${opts.filter}`);
-  if (opts.orderby) params.push(`$orderby=${encodeURIComponent(opts.orderby)}`);
+  if (opts.orderby) params.push(`$orderby=${opts.orderby}`);
   if (opts.top !== undefined) params.push(`$top=${opts.top}`);
   if (opts.skip !== undefined) params.push(`$skip=${opts.skip}`);
 

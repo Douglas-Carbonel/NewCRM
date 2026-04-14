@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   Phone,
   Mail,
-  Globe,
   MapPin,
   CreditCard,
   FileText,
@@ -63,8 +62,8 @@ export default function ClienteDetailPage() {
 
   const { cliente, ordens, notas, tarefas } = data;
 
-  const balance = cliente.Balance !== undefined
-    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: cliente.Currency ?? 'BRL' }).format(cliente.Balance)
+  const balance = cliente.CurrentAccountBalance != null
+    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cliente.CurrentAccountBalance)
     : null;
 
   return (
@@ -103,14 +102,11 @@ export default function ClienteDetailPage() {
                 {cliente.EmailAddress && (
                   <InfoRow icon={<Mail size={16} />} label="E-mail" value={cliente.EmailAddress} />
                 )}
-                {cliente.Website && (
-                  <InfoRow icon={<Globe size={16} />} label="Website" value={cliente.Website} />
-                )}
                 {cliente.City && (
                   <InfoRow
                     icon={<MapPin size={16} />}
                     label="Cidade"
-                    value={`${cliente.City}${cliente.CountryCode ? `, ${cliente.CountryCode}` : ''}`}
+                    value={`${cliente.City}${cliente.Country ? `, ${cliente.Country}` : ''}`}
                   />
                 )}
                 {balance && (
