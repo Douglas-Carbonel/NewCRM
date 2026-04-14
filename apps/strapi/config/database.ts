@@ -1,7 +1,7 @@
 import path from 'path';
 
 export default ({ env }: { env: (key: string, defaultValue?: string) => string }) => {
-  const client = env('DATABASE_CLIENT', 'sqlite');
+  const client = env('DATABASE_CLIENT', process.env.PGHOST ? 'postgres' : 'sqlite');
 
   const connections: Record<string, unknown> = {
     sqlite: {
@@ -12,11 +12,11 @@ export default ({ env }: { env: (key: string, defaultValue?: string) => string }
     },
     postgres: {
       connection: {
-        host: env('DATABASE_HOST', 'localhost'),
-        port: Number(env('DATABASE_PORT', '5432')),
-        database: env('DATABASE_NAME', 'crm_db'),
-        user: env('DATABASE_USERNAME', 'postgres'),
-        password: env('DATABASE_PASSWORD', 'postgres'),
+        host: env('DATABASE_HOST', process.env.PGHOST || 'localhost'),
+        port: Number(env('DATABASE_PORT', process.env.PGPORT || '5432')),
+        database: env('DATABASE_NAME', process.env.PGDATABASE || 'crm_db'),
+        user: env('DATABASE_USERNAME', process.env.PGUSER || 'postgres'),
+        password: env('DATABASE_PASSWORD', process.env.PGPASSWORD || 'postgres'),
         ssl: env('DATABASE_SSL', 'false') === 'true' ? { rejectUnauthorized: false } : false,
         schema: env('DATABASE_SCHEMA', 'public'),
       },

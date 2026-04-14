@@ -21,6 +21,10 @@ args = "Start application"
 task = "workflow.run"
 args = "Start SAP Integration"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start Strapi"
+
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -45,6 +49,18 @@ task = "shell.exec"
 args = "pnpm --filter sap-integration dev"
 waitForPort = 3000
 
+[[workflows.workflow]]
+name = "Start Strapi"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pnpm --filter strapi-crm dev"
+waitForPort = 8000
+
 [[ports]]
 localPort = 3000
 externalPort = 3000
@@ -52,6 +68,10 @@ externalPort = 3000
 [[ports]]
 localPort = 5000
 externalPort = 5000
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -65,3 +85,9 @@ SAP_URL = "https://177.8.39.34:50000/b1s/v1"
 SAP_COMPANY = "SBODEMOBR_DEV"
 SAP_TIMEOUT_MS = "15000"
 SAP_SERVICE_URL = "http://localhost:3000"
+APP_KEYS = "6kPPlJtnOTzon7AebQ41j0yfPD6AdE1Emhv2TUhyzgo=,4KwGszrTLQGZrfE4ciFJsrBEDtjk6XLZV8cqDcYRCxE=,N9Nxlit6xb9p9egupNmMujnSCLLrGBr0VOaDco3FqVY=,7XjxC9Nrxn8bRA3bIwCfGPirxz4OLFZECF7ScBhc+I4="
+JWT_SECRET = "fc51fb0e262db9c8b4d79dca4657656cb6a99b26cb7550e031070b3353bb0b84"
+API_TOKEN_SALT = "ae98e39cca2953ac0071313a0ea27963"
+ADMIN_JWT_SECRET = "39ba05c1c3fdb2c5da573f1134c2444a8caeac3bd24837cbc9bd71cd9da50dbb"
+DATABASE_CLIENT = "postgres"
+NEXT_PUBLIC_STRAPI_URL = "http://localhost:8000"
