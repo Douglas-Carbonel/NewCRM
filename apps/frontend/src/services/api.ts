@@ -1,5 +1,11 @@
 import axios from 'axios';
 
+export const sapClient = axios.create({
+  baseURL: '/api/sap',
+  timeout: 30000,
+  headers: { 'Content-Type': 'application/json' },
+});
+
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
 
 export const strapiClient = axios.create({

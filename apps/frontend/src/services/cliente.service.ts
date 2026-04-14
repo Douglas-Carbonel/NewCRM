@@ -1,5 +1,5 @@
-import { strapiClient } from './api';
-import { ClienteListResponse, ClienteCompleto, CrmNota } from '../types/cliente.types';
+import { sapClient } from './api';
+import { ClienteListResponse, ClienteCompleto } from '../types/cliente.types';
 
 export const clienteService = {
   async listar(params?: { top?: number; skip?: number }): Promise<ClienteListResponse> {
@@ -7,38 +7,29 @@ export const clienteService = {
     if (params?.top) query.set('top', String(params.top));
     if (params?.skip) query.set('skip', String(params.skip));
     const qs = query.toString();
-    const { data } = await strapiClient.get<ClienteListResponse>(
-      `/api/crm/clientes${qs ? `?${qs}` : ''}`
+    const { data } = await sapClient.get<ClienteListResponse>(
+      `/clientes${qs ? `?${qs}` : ''}`
     );
     return data;
   },
 
   async buscarPorCodigo(cardCode: string): Promise<ClienteCompleto['cliente']> {
-    const { data } = await strapiClient.get(`/api/crm/clientes/${encodeURIComponent(cardCode)}`);
+    const { data } = await sapClient.get(
+      `/clientes/codigo/${encodeURIComponent(cardCode)}`
+    );
     return data;
   },
 
   async buscarPorNome(nome: string): Promise<ClienteListResponse> {
-    const { data } = await strapiClient.get<ClienteListResponse>(
-      `/api/crm/clientes/busca?nome=${encodeURIComponent(nome)}`
+    const { data } = await sapClient.get<ClienteListResponse>(
+      `/clientes/nome/${encodeURIComponent(nome)}`
     );
     return data;
   },
 
   async visaoCompleta(cardCode: string): Promise<ClienteCompleto> {
-    const { data } = await strapiClient.get<ClienteCompleto>(
-      `/api/crm/clientes/${encodeURIComponent(cardCode)}/visao-completa`
-    );
-    return data;
-  },
-
-  async criarNota(
-    cardCode: string,
-    payload: { title: string; content: string; type?: string }
-  ): Promise<CrmNota> {
-    const { data } = await strapiClient.post<CrmNota>(
-      `/api/crm/clientes/${encodeURIComponent(cardCode)}/notas`,
-      payload
+    const { data } = await sapClient.get<ClienteCompleto>(
+      `/clientes/codigo/${encodeURIComponent(cardCode)}/completo`
     );
     return data;
   },
