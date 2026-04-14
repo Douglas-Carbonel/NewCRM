@@ -2,11 +2,18 @@ import { Router, Request, Response } from 'express';
 import clienteRoutes from './cliente.routes';
 import { sapService } from '../services/sap.service';
 import { limparCache } from '../controllers/cliente.controller';
+import { testHanaConnection } from '../services/hana.service';
 
 const router = Router();
 
-router.get('/health', (_req, res) => {
-  res.json({ ok: true, service: 'sap-integration', timestamp: new Date().toISOString() });
+router.get('/health', async (_req, res) => {
+  const hana = await testHanaConnection().catch(() => false);
+  res.json({
+    ok: true,
+    service: 'sap-integration',
+    timestamp: new Date().toISOString(),
+    hana: hana ? 'connected' : 'disconnected',
+  });
 });
 
 router.post('/auth/login', async (req: Request, res: Response): Promise<void> => {

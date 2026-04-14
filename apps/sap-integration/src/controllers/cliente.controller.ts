@@ -16,10 +16,7 @@ function handleSapError(err: unknown, res: Response): void {
 
   if (status === 401) {
     sapService.clearSession();
-    res.status(401).json({
-      erro: 'Sessão SAP expirada ou inválida. Tente novamente.',
-      detalhe: data,
-    });
+    res.status(401).json({ erro: 'Sessão SAP expirada. Faça login novamente.' });
     return;
   }
 
@@ -70,7 +67,6 @@ export async function listarClientes(req: Request, res: Response): Promise<void>
 export async function buscarClientePorCodigo(req: Request, res: Response): Promise<void> {
   try {
     const { codigo } = req.params;
-
     if (!codigo?.trim()) {
       res.status(400).json({ erro: 'Código do cliente é obrigatório.' });
       return;
@@ -97,7 +93,6 @@ export async function buscarClientePorCodigo(req: Request, res: Response): Promi
 export async function buscarClientePorNome(req: Request, res: Response): Promise<void> {
   try {
     const { nome } = req.params;
-
     if (!nome?.trim()) {
       res.status(400).json({ erro: 'Nome do cliente é obrigatório.' });
       return;
@@ -130,7 +125,6 @@ export async function buscarClientePorNome(req: Request, res: Response): Promise
 export async function buscarClienteCompleto(req: Request, res: Response): Promise<void> {
   try {
     const { codigo } = req.params;
-
     if (!codigo?.trim()) {
       res.status(400).json({ erro: 'Código do cliente é obrigatório.' });
       return;
