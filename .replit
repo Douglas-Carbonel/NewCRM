@@ -57,3 +57,11 @@ externalPort = 5000
 deploymentTarget = "autoscale"
 run = ["pnpm", "--filter", "crm-frontend", "start"]
 build = ["pnpm", "--filter", "crm-frontend", "build"]
+
+[userenv]
+
+[userenv.shared]
+SAP_URL = "https://177.8.39.34:50000/b1s/v1"
+SAP_COMPANY = "SBODEMOBR_DEV"
+SAP_TIMEOUT_MS = "15000"
+SAP_SERVICE_URL = "http://localhost:3000"
