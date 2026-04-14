@@ -1,4 +1,4 @@
-// File: /home/runner/workspace/apps/frontend/src/app/(dashboard)/clientes/page.tsx
+// File: /Users/macdwu/repos/NewCRM/apps/frontend/src/app/(dashboard)/clientes/page.tsx
 import * as entry from '../../../../../src/app/(dashboard)/clientes/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

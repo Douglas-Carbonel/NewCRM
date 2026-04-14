@@ -1,9 +1,11 @@
 import path from 'path';
 
 export default ({ env }: { env: (key: string, defaultValue?: string) => string }) => {
-  const client = env('DATABASE_CLIENT', process.env.PGHOST ? 'postgres' : 'sqlite');
+  const client = env('DATABASE_CLIENT', process.env.PGHOST ? 'postgres' : 'sqlite') as
+    | 'sqlite'
+    | 'postgres';
 
-  const connections: Record<string, unknown> = {
+  const connections = {
     sqlite: {
       connection: {
         filename: path.join(__dirname, '..', env('DATABASE_FILENAME', '.tmp/data.db')),
@@ -22,12 +24,12 @@ export default ({ env }: { env: (key: string, defaultValue?: string) => string }
       },
       pool: { min: 2, max: 10 },
     },
-  };
+  } as const;
 
   return {
     connection: {
       client,
-      ...connections[client],
+      ...(connections[client] as Record<string, unknown>),
       acquireConnectionTimeout: 60000,
     },
   };

@@ -1,9 +1,14 @@
 {
   "pages": {
-    "/page": [
+    "/(dashboard)/clientes/[cardCode]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/(dashboard)/clientes/[cardCode]/page.js"
+    ],
+    "/(dashboard)/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(dashboard)/layout.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -20,16 +25,6 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(dashboard)/clientes/page.js"
-    ],
-    "/(dashboard)/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/layout.js"
-    ],
-    "/(dashboard)/clientes/[cardCode]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/clientes/[cardCode]/page.js"
     ]
   }
 }

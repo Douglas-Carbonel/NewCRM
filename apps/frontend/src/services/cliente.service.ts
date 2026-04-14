@@ -1,16 +1,31 @@
 import { sapClient } from './api';
 import { ClienteListResponse, ClienteCompleto } from '../types/cliente.types';
 
+const listarInFlight = new Map<string, Promise<ClienteListResponse>>();
+
 export const clienteService = {
   async listar(params?: { top?: number; skip?: number }): Promise<ClienteListResponse> {
-    const query = new URLSearchParams();
-    if (params?.top) query.set('top', String(params.top));
-    if (params?.skip) query.set('skip', String(params.skip));
-    const qs = query.toString();
-    const { data } = await sapClient.get<ClienteListResponse>(
-      `/clientes${qs ? `?${qs}` : ''}`
-    );
-    return data;
+    const key = `${params?.top ?? '50'}_${params?.skip ?? '0'}`;
+    const existing = listarInFlight.get(key);
+    if (existing) return existing;
+
+    const promise = (async () => {
+      const query = new URLSearchParams();
+      if (params?.top) query.set('top', String(params.top));
+      if (params?.skip) query.set('skip', String(params.skip));
+      const qs = query.toString();
+      try {
+        const { data } = await sapClient.get<ClienteListResponse>(
+          `/clientes${qs ? `?${qs}` : ''}`
+        );
+        return data;
+      } finally {
+        listarInFlight.delete(key);
+      }
+    })();
+
+    listarInFlight.set(key, promise);
+    return promise;
   },
 
   async buscarPorCodigo(cardCode: string): Promise<ClienteCompleto['cliente']> {
