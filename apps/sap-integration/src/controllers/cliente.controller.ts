@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { sapService } from '../services/sap.service';
+import { cache, TTL } from '../services/cache.service';
 import { SapBusinessPartner, SapODataResponse } from '../types/sap.types';
 
 function handleSapError(err: unknown, res: Response): void {
@@ -40,6 +41,14 @@ function handleSapError(err: unknown, res: Response): void {
 export async function listarClientes(req: Request, res: Response): Promise<void> {
   try {
     const { top = '50', skip = '0', select } = req.query as Record<string, string>;
+    const cacheKey = `clientes:list:${top}:${skip}:${select ?? ''}`;
+
+    const cached = cache.get<SapODataResponse<SapBusinessPartner>>(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.json(cached);
+      return;
+    }
 
     const url = sapService.buildODataUrl('BusinessPartners', {
       select: select ?? 'CardCode,CardName,CardType,Phone1,Phone2,Cellular,EmailAddress,ContactPerson,City,Country,Currency,FederalTaxID,CurrentAccountBalance,OpenOrdersBalance',
@@ -49,6 +58,9 @@ export async function listarClientes(req: Request, res: Response): Promise<void>
     });
 
     const data = await sapService.getWithSession<SapODataResponse<SapBusinessPartner>>(url);
+    cache.set(cacheKey, data, TTL.CLIENTES_LIST);
+    res.setHeader('X-Cache', 'MISS');
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
     res.json(data);
   } catch (err) {
     handleSapError(err, res);
@@ -64,8 +76,18 @@ export async function buscarClientePorCodigo(req: Request, res: Response): Promi
       return;
     }
 
+    const cacheKey = `clientes:codigo:${codigo.trim()}`;
+    const cached = cache.get<SapBusinessPartner>(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.json(cached);
+      return;
+    }
+
     const url = `${sapService.url}/BusinessPartners('${encodeURIComponent(codigo.trim())}')`;
     const data = await sapService.getWithSession<SapBusinessPartner>(url);
+    cache.set(cacheKey, data, TTL.CLIENTE_DETAIL);
+    res.setHeader('X-Cache', 'MISS');
     res.json(data);
   } catch (err) {
     handleSapError(err, res);
@@ -82,6 +104,14 @@ export async function buscarClientePorNome(req: Request, res: Response): Promise
     }
 
     const termo = nome.trim();
+    const cacheKey = `clientes:nome:${termo.toLowerCase()}`;
+    const cached = cache.get<SapODataResponse<SapBusinessPartner>>(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.json(cached);
+      return;
+    }
+
     const url = sapService.buildODataUrl('BusinessPartners', {
       select: 'CardCode,CardName,CardType,Phone1,EmailAddress,ContactPerson,City',
       filter: `CardType eq 'C' and contains(CardName,'${termo}')`,
@@ -89,6 +119,8 @@ export async function buscarClientePorNome(req: Request, res: Response): Promise
     });
 
     const data = await sapService.getWithSession<SapODataResponse<SapBusinessPartner>>(url);
+    cache.set(cacheKey, data, TTL.BUSCA_NOME);
+    res.setHeader('X-Cache', 'MISS');
     res.json(data);
   } catch (err) {
     handleSapError(err, res);
@@ -104,10 +136,19 @@ export async function buscarClienteCompleto(req: Request, res: Response): Promis
       return;
     }
 
-    const cardCode = encodeURIComponent(codigo.trim());
+    const cardCode = codigo.trim();
+    const cacheKey = `clientes:completo:${cardCode}`;
+    const cached = cache.get<{ cliente: SapBusinessPartner; ordens: unknown[] }>(cacheKey);
+    if (cached) {
+      res.setHeader('X-Cache', 'HIT');
+      res.json(cached);
+      return;
+    }
+
+    const encodedCode = encodeURIComponent(cardCode);
     const [clienteData, ordensData] = await Promise.allSettled([
-      sapService.getWithSession<SapBusinessPartner>(`${sapService.url}/BusinessPartners('${cardCode}')`),
-      sapService.getWithSession(`${sapService.url}/Orders?$select=DocNum,DocDate,DocTotal,DocStatus&$filter=CardCode eq '${codigo.trim()}'&$top=10&$orderby=DocDate desc`),
+      sapService.getWithSession<SapBusinessPartner>(`${sapService.url}/BusinessPartners('${encodedCode}')`),
+      sapService.getWithSession(`${sapService.url}/Orders?$select=DocNum,DocDate,DocTotal,DocumentStatus&$filter=CardCode eq '${cardCode}'&$top=10&$orderby=DocDate desc`),
     ]);
 
     const cliente = clienteData.status === 'fulfilled' ? clienteData.value : null;
@@ -118,8 +159,16 @@ export async function buscarClienteCompleto(req: Request, res: Response): Promis
       return;
     }
 
-    res.json({ cliente, ordens });
+    const result = { cliente, ordens };
+    cache.set(cacheKey, result, TTL.CLIENTE_COMPLETE);
+    res.setHeader('X-Cache', 'MISS');
+    res.json(result);
   } catch (err) {
     handleSapError(err, res);
   }
+}
+
+export async function limparCache(_req: Request, res: Response): Promise<void> {
+  const count = cache.invalidate('clientes:');
+  res.json({ ok: true, invalidated: count });
 }

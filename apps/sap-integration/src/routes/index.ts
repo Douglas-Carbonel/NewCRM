@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import clienteRoutes from './cliente.routes';
 import { sapService } from '../services/sap.service';
+import { limparCache } from '../controllers/cliente.controller';
 
 const router = Router();
 
@@ -30,6 +31,8 @@ router.post('/auth/logout', (_req: Request, res: Response): void => {
   sapService.clearAll();
   res.json({ ok: true });
 });
+
+router.post('/cache/clear', limparCache);
 
 router.use('/clientes', clienteRoutes);
 
