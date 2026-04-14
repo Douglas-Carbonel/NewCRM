@@ -1,0 +1,23 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_pipeline_configs",
+  "info": {
+    "singularName": "crm-pipeline-config",
+    "pluralName": "crm-pipeline-configs",
+    "displayName": "CRM Pipeline Config",
+    "description": "Configurações de pipelines de vendas"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "stages": {
+      "type": "json",
+      "required": true,
+      "description": "Array de estágios do pipeline"
+    },
+    "isDefault": { "type": "boolean", "default": false },
+    "description": { "type": "text" },
+    "color": { "type": "string", "default": "#6366f1" }
+  }
+}

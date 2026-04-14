@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_notifications",
+  "info": {
+    "singularName": "crm-notification",
+    "pluralName": "crm-notifications",
+    "displayName": "CRM Notification",
+    "description": "Notificações do sistema CRM"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "message": { "type": "text", "required": true },
+    "type": {
+      "type": "enumeration",
+      "enum": ["info", "warning", "error", "success"],
+      "default": "info"
+    },
+    "read": { "type": "boolean", "default": false },
+    "userId": { "type": "integer", "required": true },
+    "cardCode": { "type": "string" },
+    "link": { "type": "string" }
+  }
+}

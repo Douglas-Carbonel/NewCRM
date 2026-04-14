@@ -1,0 +1,25 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_user_preferences",
+  "info": {
+    "singularName": "crm-user-preference",
+    "pluralName": "crm-user-preferences",
+    "displayName": "CRM User Preference",
+    "description": "Preferências individuais dos usuários"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "userId": { "type": "integer", "required": true, "unique": true },
+    "theme": {
+      "type": "enumeration",
+      "enum": ["light", "dark", "system"],
+      "default": "system"
+    },
+    "language": { "type": "string", "default": "pt-BR" },
+    "notificationsEnabled": { "type": "boolean", "default": true },
+    "defaultView": { "type": "string", "default": "clientes" },
+    "itemsPerPage": { "type": "integer", "default": 25 },
+    "sidebarCollapsed": { "type": "boolean", "default": false }
+  }
+}

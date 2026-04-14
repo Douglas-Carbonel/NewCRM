@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_sap_cache_opportunities",
+  "info": {
+    "singularName": "crm-sap-cache-opportunity",
+    "pluralName": "crm-sap-cache-opportunities",
+    "displayName": "CRM SAP Cache Opportunity",
+    "description": "Cache local de oportunidades/pedidos do SAP B1"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "docEntry": { "type": "integer", "required": true, "unique": true },
+    "cardCode": { "type": "string", "required": true },
+    "data": {
+      "type": "json",
+      "required": true,
+      "description": "Payload completo do SAP"
+    },
+    "cachedAt": { "type": "datetime", "required": true },
+    "expiresAt": { "type": "datetime", "required": true },
+    "isStale": { "type": "boolean", "default": false }
+  }
+}

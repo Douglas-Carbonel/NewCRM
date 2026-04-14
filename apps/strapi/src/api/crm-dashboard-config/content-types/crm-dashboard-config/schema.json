@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_dashboard_configs",
+  "info": {
+    "singularName": "crm-dashboard-config",
+    "pluralName": "crm-dashboard-configs",
+    "displayName": "CRM Dashboard Config",
+    "description": "Configuração de dashboard por usuário"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "userId": { "type": "integer", "required": true },
+    "layout": {
+      "type": "json",
+      "description": "Layout do dashboard (grid positions)"
+    },
+    "widgets": {
+      "type": "json",
+      "description": "Configuração dos widgets ativos"
+    },
+    "name": { "type": "string", "default": "Default" }
+  }
+}

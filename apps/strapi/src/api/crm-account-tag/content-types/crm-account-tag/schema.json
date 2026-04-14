@@ -1,0 +1,18 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_account_tags",
+  "info": {
+    "singularName": "crm-account-tag",
+    "pluralName": "crm-account-tags",
+    "displayName": "CRM Account Tag",
+    "description": "Tags associadas a contas de clientes"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "name": { "type": "string", "required": true },
+    "color": { "type": "string", "default": "#6366f1" },
+    "cardCode": { "type": "string", "required": true },
+    "description": { "type": "string" }
+  }
+}

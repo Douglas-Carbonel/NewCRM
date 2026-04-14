@@ -1,0 +1,29 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_tasks",
+  "info": {
+    "singularName": "crm-task",
+    "pluralName": "crm-tasks",
+    "displayName": "CRM Task",
+    "description": "Tarefas associadas a clientes"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "description": { "type": "text" },
+    "cardCode": { "type": "string", "required": true },
+    "dueDate": { "type": "datetime" },
+    "status": {
+      "type": "enumeration",
+      "enum": ["open", "in_progress", "done", "cancelled"],
+      "default": "open"
+    },
+    "priority": {
+      "type": "enumeration",
+      "enum": ["low", "medium", "high"],
+      "default": "medium"
+    },
+    "assignedTo": { "type": "integer" }
+  }
+}

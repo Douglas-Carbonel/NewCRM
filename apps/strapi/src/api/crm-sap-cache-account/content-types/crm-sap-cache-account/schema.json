@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_sap_cache_accounts",
+  "info": {
+    "singularName": "crm-sap-cache-account",
+    "pluralName": "crm-sap-cache-accounts",
+    "displayName": "CRM SAP Cache Account",
+    "description": "Cache local de dados de contas do SAP Business One"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "cardCode": { "type": "string", "required": true, "unique": true },
+    "cardName": { "type": "string", "required": true },
+    "data": {
+      "type": "json",
+      "required": true,
+      "description": "Payload completo do SAP"
+    },
+    "cachedAt": { "type": "datetime", "required": true },
+    "expiresAt": { "type": "datetime", "required": true },
+    "isStale": { "type": "boolean", "default": false }
+  }
+}

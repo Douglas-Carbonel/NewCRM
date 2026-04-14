@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_integration_logs",
+  "info": {
+    "singularName": "crm-integration-log",
+    "pluralName": "crm-integration-logs",
+    "displayName": "CRM Integration Log",
+    "description": "Log de integrações com sistemas externos (SAP, etc.)"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "service": { "type": "string", "required": true },
+    "action": { "type": "string", "required": true },
+    "status": {
+      "type": "enumeration",
+      "enum": ["success", "error", "timeout", "pending"],
+      "required": true
+    },
+    "requestPayload": { "type": "json" },
+    "responsePayload": { "type": "json" },
+    "errorMessage": { "type": "text" },
+    "duration": { "type": "integer", "description": "Duração em ms" },
+    "userId": { "type": "integer" },
+    "correlationId": { "type": "string" }
+  }
+}

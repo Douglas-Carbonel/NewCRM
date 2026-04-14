@@ -1,0 +1,123 @@
+Quero que você atue como arquiteto de software e desenvolvedor full stack.
+
+Estou construindo um CRM moderno com integração ao SAP Business One, e quero usar Strapi como camada de CRM/headless backend, sem substituir a integração técnica principal com o SAP.
+
+Contexto atual:
+- Já tenho uma API Node.js + Express que funciona como ponte com o SAP Business One Service Layer.
+- Essa API atualmente possui endpoints para clientes (BusinessPartners), com login na Service Layer e reaproveitamento de sessão por cookie.
+- No futuro, o sistema será um CRM em tempo real integrado ao SAP B1.
+
+Objetivo:
+Quero estruturar a base correta do projeto para crescimento futuro.
+
+Arquitetura desejada:
+1. Frontend separado, em Next.js + TypeScript
+2. Strapi 5 como backend do CRM
+3. Serviço Node.js/Express separado para integração com SAP B1
+4. PostgreSQL para dados do CRM
+5. Redis e fila preparados para futuro realtime
+6. Projeto organizado de forma profissional e escalável
+
+Importante:
+- O Strapi NÃO deve ser usado como substituto da integração SAP crítica.
+- O Strapi deve ser usado para:
+  - autenticação
+  - permissões
+  - dados complementares do CRM
+  - APIs do portal
+  - composição de dados
+  - webhooks
+  - rotas customizadas que chamam o serviço SAP
+- O serviço SAP deve continuar responsável por:
+  - login na Service Layer
+  - sessão
+  - retry
+  - timeout
+  - logs técnicos
+  - idempotência
+  - integração crítica com SAP
+
+Quero que você gere a estrutura inicial do projeto com este formato:
+
+crm-platform/
+  apps/
+    frontend/
+    strapi/
+    sap-integration/
+  packages/
+    shared-types/
+    shared-utils/
+  infra/
+
+Tarefas que você deve executar:
+1. Definir a melhor estrutura de monorepo para esse cenário
+2. Criar a base do projeto
+3. Configurar o Strapi 5
+4. Criar content-types iniciais no Strapi
+5. Criar rotas customizadas no Strapi para consumo do SAP
+6. Criar um serviço SAP separado em Node.js/Express
+7. Criar comunicação entre Strapi e serviço SAP
+8. Preparar a base do frontend em Next.js
+9. Explicar como rodar tudo em desenvolvimento
+
+Quero estes content-types iniciais no Strapi:
+- crm-note
+- crm-task
+- crm-notification
+- crm-account-tag
+- crm-contact-history
+- crm-pipeline-config
+- crm-dashboard-config
+- crm-user-preference
+- crm-integration-log
+- crm-sap-cache-account
+- crm-sap-cache-opportunity
+
+Quero também estas rotas customizadas no Strapi:
+- GET /crm/clientes
+- GET /crm/clientes/:cardCode
+- GET /crm/clientes/busca?nome=
+- GET /crm/clientes/:cardCode/visao-completa
+- POST /crm/clientes/:cardCode/notas
+- GET /crm/dashboard/resumo
+
+Essas rotas devem:
+- validar autenticação
+- aplicar permissões
+- chamar o serviço SAP quando necessário
+- unir dados do SAP com dados locais do Strapi
+- devolver payload pronto para o frontend
+
+No frontend, quero uma base com:
+- login
+- layout administrativo moderno
+- sidebar
+- header
+- página inicial de clientes
+- listagem de clientes
+- busca por código
+- busca por nome
+- loading
+- erro
+- empty state
+
+Regras de implementação:
+- TypeScript em tudo
+- código limpo
+- pastas organizadas por domínio
+- services desacoplados
+- nada de lógica SAP direta no frontend
+- nada de credenciais hardcoded
+- usar variáveis de ambiente
+- preparar Docker Compose para desenvolvimento
+- documentar comandos de inicialização
+
+Entrega esperada:
+1. árvore de pastas completa
+2. arquivos iniciais principais
+3. código base funcional
+4. exemplo de integração Strapi -> serviço SAP
+5. instruções para rodar localmente
+6. próximos passos recomendados
+
+Quero que você comece pela estrutura do monorepo e depois gere os arquivos essenciais de cada app.

@@ -1,0 +1,82 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: crm_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: crm_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: crm_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sap-integration:
+    build:
+      context: ../apps/sap-integration
+      dockerfile: Dockerfile
+    container_name: crm_sap_integration
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    env_file:
+      - ../.env
+    depends_on:
+      - postgres
+
+  strapi:
+    build:
+      context: ../apps/strapi
+      dockerfile: Dockerfile
+    container_name: crm_strapi
+    restart: unless-stopped
+    ports:
+      - '1337:1337'
+    env_file:
+      - ../.env
+    environment:
+      SAP_SERVICE_URL: http://sap-integration:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../apps/frontend
+      dockerfile: Dockerfile
+    container_name: crm_frontend
+    restart: unless-stopped
+    ports:
+      - '5000:5000'
+    env_file:
+      - ../.env
+    environment:
+      NEXT_PUBLIC_STRAPI_URL: http://strapi:1337
+    depends_on:
+      - strapi
+
+volumes:
+  postgres_data:
+  redis_data:

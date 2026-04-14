@@ -1,22 +1,17 @@
 {
-  "name": "api-node-b1",
+  "name": "crm-platform",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "CRM moderno integrado ao SAP Business One",
+  "private": true,
   "scripts": {
-    "start": "node Server.js",
-    "dev": "nodemon Server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "testar-sap": "node scripts/testar-conexao-sap.js"
+    "dev": "pnpm --parallel -r dev",
+    "dev:sap": "pnpm --filter sap-integration dev",
+    "dev:strapi": "pnpm --filter strapi-crm dev",
+    "dev:frontend": "pnpm --filter crm-frontend dev",
+    "build": "pnpm -r build",
+    "install:all": "pnpm install"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "axios": "^1.13.6",
-    "express": "^5.2.1",
-    "nodemon": "^3.1.14",
-    "sapb1-connect": "^1.0.0"
+  "devDependencies": {
+    "typescript": "^5.4.5"
   }
 }

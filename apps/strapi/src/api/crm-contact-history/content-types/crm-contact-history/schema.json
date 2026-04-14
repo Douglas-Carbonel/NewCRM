@@ -1,0 +1,30 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_contact_histories",
+  "info": {
+    "singularName": "crm-contact-history",
+    "pluralName": "crm-contact-histories",
+    "displayName": "CRM Contact History",
+    "description": "Histórico de contatos com clientes"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "cardCode": { "type": "string", "required": true },
+    "type": {
+      "type": "enumeration",
+      "enum": ["inbound", "outbound"],
+      "default": "outbound"
+    },
+    "channel": {
+      "type": "enumeration",
+      "enum": ["phone", "email", "meeting", "whatsapp", "chat", "other"],
+      "default": "phone"
+    },
+    "summary": { "type": "text", "required": true },
+    "contactDate": { "type": "datetime", "required": true },
+    "contactPerson": { "type": "string" },
+    "duration": { "type": "integer", "description": "Duração em minutos" },
+    "authorId": { "type": "integer" }
+  }
+}

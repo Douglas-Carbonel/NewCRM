@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_notes",
+  "info": {
+    "singularName": "crm-note",
+    "pluralName": "crm-notes",
+    "displayName": "CRM Note",
+    "description": "Notas sobre clientes/contas no CRM"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "title": { "type": "string", "required": true },
+    "content": { "type": "text", "required": true },
+    "cardCode": { "type": "string", "required": true },
+    "type": {
+      "type": "enumeration",
+      "enum": ["call", "meeting", "email", "note", "other"],
+      "default": "note"
+    },
+    "pinned": { "type": "boolean", "default": false },
+    "authorId": { "type": "integer" }
+  }
+}
