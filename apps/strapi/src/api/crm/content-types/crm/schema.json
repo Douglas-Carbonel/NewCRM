@@ -1,0 +1,15 @@
+{
+  "kind": "collectionType",
+  "collectionName": "crm_proxy",
+  "info": {
+    "singularName": "crm",
+    "pluralName": "crms",
+    "displayName": "CRM SAP",
+    "description": "Tipo mínimo para rotas customizadas que integram com o SAP (sem persistência de negócio aqui)."
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "label": { "type": "string", "default": "proxy" }
+  }
+}
