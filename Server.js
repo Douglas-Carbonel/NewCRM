@@ -9,6 +9,7 @@ app.get("/", (req, res) => res.json({ ok: true, mensagem: "API rodando" }));
 // Rotas de clientes
 app.use("/clientes", clientesRouter);
 
-app.listen(3000, () => {
-  console.log("API rodando na porta 3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`API rodando na porta ${PORT}`);
 });
