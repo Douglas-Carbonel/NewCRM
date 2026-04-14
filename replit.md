@@ -72,13 +72,17 @@ crm-platform/
 - `/clientes` — Listagem + busca por nome/código
 - `/clientes/[cardCode]` — Detalhes do cliente + pedidos + notas + tarefas
 
-## Development Setup
-1. Copiar `.env.example` para `.env` e preencher credenciais SAP
-2. Para Strapi: `docker-compose -f infra/docker-compose.yml up postgres redis -d`
-3. `pnpm install` (na raiz)
-4. `pnpm dev:sap` — inicia SAP Integration
-5. `pnpm dev:strapi` — inicia Strapi (requer PostgreSQL)
-6. `pnpm dev:frontend` — inicia frontend
+## Development Setup (Replit)
+1. `pnpm install` runs automatically on workflow start
+2. SAP Integration runs via "Start SAP Integration" workflow (tsx watch, port 3000)
+3. Frontend runs via "Start application" workflow (Next.js, port 5000)
+4. Strapi requires PostgreSQL — not run by default in Replit dev environment
+5. Native packages (better-sqlite3, sharp, esbuild, etc.) approved via `pnpm.onlyBuiltDependencies` in root package.json
+
+## Replit Migration Notes
+- Replaced `ts-node-dev` with `tsx` for SAP Integration (ts-node-dev not available on Replit)
+- `pnpm install` runs at workflow startup to ensure node_modules are present
+- Build script approvals for native packages configured in root `package.json`
 
 ## Deployment
 - Build: `pnpm --filter crm-frontend build`
