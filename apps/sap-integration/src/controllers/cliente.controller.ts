@@ -38,7 +38,7 @@ function handleSapError(err: unknown, res: Response): void {
 export async function listarClientes(req: Request, res: Response): Promise<void> {
   try {
     const { top = '50', skip = '0', select } = req.query as Record<string, string>;
-    const cacheKey = `clientes:list:${top}:${skip}:${select ?? ''}`;
+    const cacheKey = `clientes:list:v2:${top}:${skip}:${select ?? ''}`;
 
     const cached = cache.get<SapODataResponse<SapBusinessPartner>>(cacheKey);
     if (cached) {
@@ -47,14 +47,19 @@ export async function listarClientes(req: Request, res: Response): Promise<void>
       return;
     }
 
+    const topNum = Math.max(1, Number(top) || 50);
     const url = sapService.buildODataUrl('BusinessPartners', {
       select: select ?? 'CardCode,CardName,CardType,Phone1,Phone2,Cellular,EmailAddress,ContactPerson,City,Country,Currency,FederalTaxID,CurrentAccountBalance,OpenOrdersBalance',
       filter: "CardType eq 'C'",
-      top: Number(top),
+      top: topNum,
       skip: Number(skip),
     });
 
-    const data = await sapService.getWithSession<SapODataResponse<SapBusinessPartner>>(url);
+    const data = await sapService.getWithSession<SapODataResponse<SapBusinessPartner>>(url, {
+      headers: {
+        Prefer: `odata.maxpagesize=${topNum}`,
+      },
+    });
     cache.set(cacheKey, data, TTL.CLIENTES_LIST);
     res.setHeader('X-Cache', 'MISS');
     res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
@@ -107,13 +112,18 @@ export async function buscarClientePorNome(req: Request, res: Response): Promise
       return;
     }
 
+    const nomeTop = 50;
     const url = sapService.buildODataUrl('BusinessPartners', {
       select: 'CardCode,CardName,CardType,Phone1,EmailAddress,ContactPerson,City',
       filter: `CardType eq 'C' and contains(CardName,'${termo}')`,
-      top: 50,
+      top: nomeTop,
     });
 
-    const data = await sapService.getWithSession<SapODataResponse<SapBusinessPartner>>(url);
+    const data = await sapService.getWithSession<SapODataResponse<SapBusinessPartner>>(url, {
+      headers: {
+        Prefer: `odata.maxpagesize=${nomeTop}`,
+      },
+    });
     cache.set(cacheKey, data, TTL.BUSCA_NOME);
     res.setHeader('X-Cache', 'MISS');
     res.json(data);
