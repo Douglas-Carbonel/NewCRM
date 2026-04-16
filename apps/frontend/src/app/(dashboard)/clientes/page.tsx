@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, RefreshCw } from 'lucide-react';
+import { Search, RefreshCw, UserPlus } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { ClienteList } from '@/components/clientes/ClienteList';
+import { NovoClienteModal } from '@/components/clientes/NovoClienteModal';
 import { clienteService } from '@/services/cliente.service';
 import { Cliente } from '@/types/cliente.types';
 
@@ -14,6 +15,7 @@ export default function ClientesPage() {
   const [search, setSearch] = useState('');
   const [searchType, setSearchType] = useState<'codigo' | 'nome'>('nome');
   const [page, setPage] = useState(0);
+  const [showModal, setShowModal] = useState(false);
   const PAGE_SIZE = 50;
 
   const fetchClientes = useCallback(async () => {
@@ -70,6 +72,7 @@ export default function ClientesPage() {
       <Header title="Clientes" />
 
       <div className="p-6 space-y-6">
+        {/* Barra de ações */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex rounded-lg border border-gray-300 overflow-hidden flex-1">
             <select
@@ -97,6 +100,7 @@ export default function ClientesPage() {
               </button>
             )}
           </div>
+
           <button
             onClick={handleSearch}
             className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
@@ -104,12 +108,22 @@ export default function ClientesPage() {
             <Search size={16} />
             Buscar
           </button>
+
           <button
             onClick={fetchClientes}
             className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
           >
             <RefreshCw size={16} />
             Atualizar
+          </button>
+
+          <button
+            id="btn-novo-cliente"
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
+          >
+            <UserPlus size={16} />
+            Novo Cliente
           </button>
         </div>
 
@@ -145,6 +159,17 @@ export default function ClientesPage() {
           </div>
         )}
       </div>
+
+      {/* Modal de novo cliente */}
+      {showModal && (
+        <NovoClienteModal
+          onClose={() => setShowModal(false)}
+          onSuccess={() => {
+            setShowModal(false);
+            fetchClientes();
+          }}
+        />
+      )}
     </div>
   );
 }

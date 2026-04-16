@@ -3,6 +3,10 @@ import { sapService } from '../services/sap.service';
 import { cache, TTL } from '../services/cache.service';
 import { SapBusinessPartner, SapODataResponse } from '../types/sap.types';
 
+// Deduplicação: evita múltiplos requests simultâneos ao SAP para o mesmo recurso
+const detalheInFlight = new Map<string, Promise<SapBusinessPartner>>();
+const completoInFlight = new Map<string, Promise<{ cliente: SapBusinessPartner; ordens: unknown[] }>>();
+
 function handleSapError(err: unknown, res: Response): void {
   const error = err as {
     status?: number;
@@ -77,7 +81,8 @@ export async function buscarClientePorCodigo(req: Request, res: Response): Promi
       return;
     }
 
-    const cacheKey = `clientes:codigo:${codigo.trim()}`;
+    const cardCode = codigo.trim();
+    const cacheKey = `clientes:codigo:${cardCode}`;
     const cached = cache.get<SapBusinessPartner>(cacheKey);
     if (cached) {
       res.setHeader('X-Cache', 'HIT');
@@ -85,9 +90,22 @@ export async function buscarClientePorCodigo(req: Request, res: Response): Promi
       return;
     }
 
-    const url = `${sapService.url}/BusinessPartners('${encodeURIComponent(codigo.trim())}')`;
-    const data = await sapService.getWithSession<SapBusinessPartner>(url);
-    cache.set(cacheKey, data, TTL.CLIENTE_DETAIL);
+    // Deduplica requests simultâneos para o mesmo código
+    let promise = detalheInFlight.get(cardCode);
+    if (!promise) {
+      const url = `${sapService.url}/BusinessPartners('${encodeURIComponent(cardCode)}')`;
+      promise = sapService.getWithSession<SapBusinessPartner>(url).then((data) => {
+        cache.set(cacheKey, data, TTL.CLIENTE_DETAIL);
+        detalheInFlight.delete(cardCode);
+        return data;
+      }).catch((err) => {
+        detalheInFlight.delete(cardCode);
+        throw err;
+      });
+      detalheInFlight.set(cardCode, promise);
+    }
+
+    const data = await promise;
     res.setHeader('X-Cache', 'MISS');
     res.json(data);
   } catch (err) {
@@ -149,22 +167,31 @@ export async function buscarClienteCompleto(req: Request, res: Response): Promis
       return;
     }
 
-    const encodedCode = encodeURIComponent(cardCode);
-    const [clienteData, ordensData] = await Promise.allSettled([
-      sapService.getWithSession<SapBusinessPartner>(`${sapService.url}/BusinessPartners('${encodedCode}')`),
-      sapService.getWithSession(`${sapService.url}/Orders?$select=DocNum,DocDate,DocTotal,DocumentStatus&$filter=CardCode eq '${cardCode}'&$top=10&$orderby=DocDate desc`),
-    ]);
+    // Deduplica requests simultâneos para o mesmo código
+    let promise = completoInFlight.get(cardCode);
+    if (!promise) {
+      const encodedCode = encodeURIComponent(cardCode);
+      promise = Promise.allSettled([
+        sapService.getWithSession<SapBusinessPartner>(`${sapService.url}/BusinessPartners('${encodedCode}')`),
+        sapService.getWithSession(`${sapService.url}/Orders?$select=DocNum,DocDate,DocTotal,DocumentStatus&$filter=CardCode eq '${cardCode}'&$top=10&$orderby=DocDate desc`),
+      ]).then(([clienteData, ordensData]) => {
+        const cliente = clienteData.status === 'fulfilled' ? clienteData.value : null;
+        const ordens = ordensData.status === 'fulfilled' ? (ordensData.value as { value: unknown[] }).value ?? [] : [];
 
-    const cliente = clienteData.status === 'fulfilled' ? clienteData.value : null;
-    const ordens = ordensData.status === 'fulfilled' ? (ordensData.value as { value: unknown[] }).value ?? [] : [];
+        if (!cliente) throw Object.assign(new Error('Cliente não encontrado no SAP.'), { status: 404 });
 
-    if (!cliente) {
-      res.status(404).json({ erro: 'Cliente não encontrado no SAP.' });
-      return;
+        const result = { cliente, ordens };
+        cache.set(cacheKey, result, TTL.CLIENTE_COMPLETE);
+        completoInFlight.delete(cardCode);
+        return result;
+      }).catch((err) => {
+        completoInFlight.delete(cardCode);
+        throw err;
+      });
+      completoInFlight.set(cardCode, promise);
     }
 
-    const result = { cliente, ordens };
-    cache.set(cacheKey, result, TTL.CLIENTE_COMPLETE);
+    const result = await promise;
     res.setHeader('X-Cache', 'MISS');
     res.json(result);
   } catch (err) {
@@ -175,4 +202,62 @@ export async function buscarClienteCompleto(req: Request, res: Response): Promis
 export async function limparCache(_req: Request, res: Response): Promise<void> {
   const count = cache.invalidate('clientes:');
   res.json({ ok: true, invalidated: count });
+}
+
+export async function criarCliente(req: Request, res: Response): Promise<void> {
+  try {
+    const body = req.body as Record<string, unknown>;
+
+    const CardCode = (body.CardCode as string | undefined)?.trim();
+    const CardName = (body.CardName as string | undefined)?.trim();
+
+    if (!CardCode) {
+      res.status(400).json({ erro: 'CardCode é obrigatório.' });
+      return;
+    }
+    if (!CardName) {
+      res.status(400).json({ erro: 'CardName é obrigatório.' });
+      return;
+    }
+
+    // Campos de endereço não existem no raiz do BusinessPartner no SAP —
+    // devem ser enviados dentro de BPAddresses
+    const Street = body.Street as string | undefined;
+    const ZipCode = body.ZipCode as string | undefined;
+    const City = body.City as string | undefined;
+
+    // Monta payload sem campos inválidos no raiz
+    const { Street: _s, ZipCode: _z, City: _c, ...rest } = body;
+    void _s; void _z; void _c;
+
+    const payload: Record<string, unknown> = {
+      CardType: 'C',
+      ...rest,
+      CardCode,
+      CardName,
+    };
+
+    // Adiciona endereços em BPAddresses apenas se fornecidos
+    if (Street || ZipCode || City) {
+      const address = {
+        Street: Street ?? '',
+        ZipCode: ZipCode ?? '',
+        City: City ?? '',
+        Country: 'BR',
+      };
+      payload['BPAddresses'] = [
+        { ...address, AddressName: 'Cobranca', AddressType: 'bo_BillTo' },
+        { ...address, AddressName: 'Entrega',  AddressType: 'bo_ShipTo'  },
+      ];
+    }
+
+    const url = `${sapService.url}/BusinessPartners`;
+    const data = await sapService.postWithSession<SapBusinessPartner>(url, payload);
+
+    cache.invalidate('clientes:list:');
+
+    res.status(201).json(data);
+  } catch (err) {
+    handleSapError(err, res);
+  }
 }

@@ -1,0 +1,15 @@
+[33macfbf9d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdev-doug[m[33m, [m[1;31morigin/dev-doug[m[33m)[m chore: remove .next do versionamento
+[33mdc84021[m feat: alterações trazidas da backup-alteracoes
+[33mc0acc97[m Saved progress at the end of the loop
+[33mceb2dde[m Saved progress at the end of the loop
+[33m304e2c9[m Improve client data loading performance and fix order status errors
+[33me593725[m Improve application performance with caching and bug fixes
+[33m44e564b[m Update login to use SAP credentials and display user in header
+[33mb006746[m Saved progress at the end of the loop
+[33m13d121a[m Establish a new CRM platform with frontend, backend, and SAP integration
+[33m19567c5[m Update client information display and fix data fetching issues
+[33m56840c2[m Update system to connect to SAP integration service
+[33mf75f3d9[m Update client service to communicate with SAP integration
+[33me6981f7[m Saved progress at the end of the loop
+[33m76015a2[m Configure the API to run in the Replit environment
+[33m09486a4[m estrutura corrigida

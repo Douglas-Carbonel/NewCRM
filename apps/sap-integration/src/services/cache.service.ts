@@ -44,8 +44,8 @@ class SimpleCache {
 export const cache = new SimpleCache();
 
 export const TTL = {
-  CLIENTES_LIST: 5 * 60 * 1000,
-  CLIENTE_DETAIL: 5 * 60 * 1000,
-  CLIENTE_COMPLETE: 3 * 60 * 1000,
-  BUSCA_NOME: 2 * 60 * 1000,
+  CLIENTES_LIST:    5 * 60 * 1000,  // 5 min  — lista pode mudar com novo cliente
+  CLIENTE_DETAIL:  15 * 60 * 1000,  // 15 min — dados do cliente mudam raramente
+  CLIENTE_COMPLETE: 10 * 60 * 1000, // 10 min — inclui ordens, um pouco mais dinâmico
+  BUSCA_NOME:       2 * 60 * 1000,  // 2 min  — busca textual muda mais
 } as const;

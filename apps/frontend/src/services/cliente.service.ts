@@ -48,4 +48,9 @@ export const clienteService = {
     );
     return data;
   },
+
+  async criar(payload: Partial<import('../types/cliente.types').Cliente>): Promise<import('../types/cliente.types').Cliente> {
+    const { data } = await sapClient.post<import('../types/cliente.types').Cliente>('/clientes', payload);
+    return data;
+  },
 };

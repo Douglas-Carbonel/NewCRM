@@ -133,6 +133,39 @@ async function getWithSession<T>(url: string, options: AxiosRequestConfig = {}):
   }
 }
 
+async function postWithSession<T>(url: string, body: unknown, options: AxiosRequestConfig = {}): Promise<T> {
+  if (!cookieSession) {
+    await loginSAP();
+  }
+
+  const makeRequest = async () =>
+    axios.post<T>(url, body, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+        Cookie: cookieSession!,
+      },
+      httpsAgent,
+      timeout: options.timeout ?? config.sap.timeoutMs,
+    });
+
+  try {
+    const response = await makeRequest();
+    return response.data;
+  } catch (err: unknown) {
+    const e = err as { response?: { status?: number; data?: unknown } };
+    if (e.response?.status === 401) {
+      cookieSession = null;
+      await loginSAP();
+      const retry = await makeRequest();
+      return retry.data;
+    }
+    console.error(`[SAP] POST Error ${e.response?.status}:`, JSON.stringify(e.response?.data));
+    throw err;
+  }
+}
+
 function buildODataUrl(endpoint: string, opts: SapQueryOptions = {}): string {
   const params: string[] = [];
   if (opts.select) params.push(`$select=${opts.select}`);
@@ -153,5 +186,6 @@ export const sapService = {
   clearSession,
   clearAll,
   getWithSession,
+  postWithSession,
   buildODataUrl,
 };
